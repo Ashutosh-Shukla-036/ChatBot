@@ -19,18 +19,15 @@ function App() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // Scroll to the latest message when new messages are added
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatState.messages]);
 
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = { role: 'user', content };
 
-    // Add the user message to the state and set loading state
+    // Add user message and set loading state
     setChatState((prev) => ({
       ...prev,
       messages: [...prev.messages, userMessage],
@@ -39,37 +36,31 @@ function App() {
     }));
 
     try {
-      const formatWeatherResponse = (content: string): string => {
-        // Format the content to make it more readable
-        return content
-          .replace(/• /g, '\n- ') // Convert bullet points to dashes
-          .replace(/\*\*([^\*]+)\*\*/g, '**$1**') // Retain bold formatting
-          .replace(/\* ([^\*]+)\*/g, '    - $1') // Add indentation for sub-points
-          .replace(/(Location|Timeframe|Details|Example Request)/g, '\n### $1\n') // Add headings for major sections
-          .replace(/: /g, ':\n') // Ensure proper spacing for better visibility
-          .trim(); // Remove extra spaces
-      };
-      
       const response = await generateContent(content);
-      
+
       // Format the received response
-      const formattedResponse = formatWeatherResponse(
-        response || "Sorry, I could not generate a response."
-      );
-      
+      const formattedResponse = response
+        ? response
+            .replace(/• /g, '\n- ') // Convert bullet points to dashes
+            .replace(/\*\*([^\*]+)\*\*/g, '**$1**') // Retain bold formatting
+            .replace(/\* ([^\*]+)\*/g, '    - $1') // Indent sub-points
+            .replace(/(Location|Timeframe|Details|Example Request)/g, '\n### $1\n') // Add headings
+            .replace(/: /g, ':\n') // Ensure proper spacing
+            .trim()
+        : 'Sorry, I could not generate a response.';
+
       const assistantMessage: Message = {
-        role: "assistant",
+        role: 'assistant',
         content: formattedResponse,
       };
-      
-      // Update the state with both user and assistant messages in one go
+
+      // Update state with assistant's response
       setChatState((prev) => ({
         ...prev,
         messages: [...prev.messages, assistantMessage],
         isLoading: false,
-      }));                
+      }));
     } catch (error) {
-      // Handle any error that occurs during the API call
       setChatState((prev) => ({
         ...prev,
         isLoading: false,
