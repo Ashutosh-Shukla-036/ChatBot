@@ -20,9 +20,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             ? 'bg-blue-500 text-white self-end'
             : 'bg-gray-200 text-black'
         }`}
-      >
-        {message.content}
-      </div>
+        dangerouslySetInnerHTML={{ __html: message.content }}
+      ></div>
     </div>
   );
 };
